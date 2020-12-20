@@ -9,7 +9,8 @@ type TileId = uint64 // just to not use it by mistake
 
 type RawTile (id: TileId, lines: String[]) as self =
     override this.ToString() = String.concat "\n" lines |> (sprintf "Tile[%d]: \n%s\n" id)
-    member this.Id = id 
+    member this.Id = id
+    member this.Lines = lines 
     member this.left () : int =
         lines
         |> Seq.map (fun line -> (line.ToCharArray ()).[0])
@@ -93,14 +94,23 @@ type RawTile (id: TileId, lines: String[]) as self =
          frontSide.flipVertical()                  // rotation 3 (= rotate.rotate)
          backSide.rotateRight ()                   // rotation 4
         |]
+    member this.Height = lines.Length
+    member this.Width = lines.[0].Length
+    member this.charAt (pos:int*int) = lines.[snd pos].[fst pos]
+    member this.countChar (charToMatch:char) =
+        let countForLine (s:String) =
+            s.ToCharArray()
+            |> Seq.filter (fun (c:char) -> c = charToMatch)
+            |> Seq.length
+        lines |> Seq.map countForLine |> Seq.sum 
 
-type FastTile (id:TileId,top:int,bottom:int,left:int,right:int) as self =
+type FastTile (id:TileId,top:int,bottom:int,left:int,right:int,raw:RawTile) as self =
     override this.ToString () = sprintf "FastTile(id:%d t:%d,b:%d,l:%d,r:%d)" id top bottom left right
-    new(raw:RawTile) = FastTile(raw.Id, raw.top (), raw.bottom (), raw.left (), raw.right ())
+    new(raw:RawTile) = FastTile(raw.Id, raw.top (), raw.bottom (), raw.left (), raw.right (), raw)
     member this.Id = id
     member this.Top = top
     member this.Bottom = bottom
     member this.Left = left
-    member this.Right = right 
-        
+    member this.Right = right
+    member this.Raw = raw 
         

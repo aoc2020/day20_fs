@@ -58,5 +58,5 @@ let assemble (raws:RawTile[]) : TileMap =
     printfn "Edge: %d" edge    
     let solution = solve tiles positions Set.empty Map.empty |> Seq.head 
 //    printfn "Solution.size= %A" solution.Length
-    solution 
+    solution
     
