@@ -71,6 +71,21 @@ type RawTile (id: int, lines: String[]) as self =
         RawTile (id,newLines)
         
     member this.rotateRight () : RawTile = this.rotateLeft().rotateLeft().rotateLeft()
+    
+    member this.allOrientations () : RawTile[] =
+        let frontSide = self 
+        let backSide  = self.flipHorizontal () // vertical is faster 
+        [|
+         frontSide                                 // rotation 1
+         frontSide.rotateLeft ()                   // rotation 2
+         backSide.flipVertical()                   // rotation 3 (= rotate.rotate)
+         frontSide.rotateRight ()                  // rotation 4 
+         backSide                                  // rotation 1
+         backSide.rotateLeft ()                    // rotation 2
+         frontSide.flipVertical()                  // rotation 3 (= rotate.rotate)
+         backSide.rotateRight ()                   // rotation 4
+        |]
+         
         
         
         
