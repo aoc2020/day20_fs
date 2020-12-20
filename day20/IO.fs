@@ -11,6 +11,8 @@ let readFile (file:String) = seq {
 }
 
 let rec splitByBlank(lines: String[]) : List<List<String>> =
+    let rmEmpty (lists:list<list<String>>) =
+        lists |> List.filter (fun (item:List<String>) -> item <> [])
     let init = [[]]
     let accumulate (acc:list<list<String>>) (value:String) =
                     if value = "" then
@@ -18,19 +20,23 @@ let rec splitByBlank(lines: String[]) : List<List<String>> =
                     else
                         match acc with
                         | head::tail -> (value::head)::tail
-    let res = lines |> Seq.fold accumulate init 
+    let accumulated = lines |> Seq.fold accumulate init
+    let res = rmEmpty (accumulated)
     res |> List.map (List.rev) |> List.rev // all is backwards, so deep reverse     
             
 
 let toRawTile (s: List<String>) : RawTile =
+    printfn "toRawTile: %A" s 
     let lines = s.Tail |> Seq.toArray
-    let id = ((s.Head.Split " ").[1].Split ":").[0] |> int
+    let id = ((s.Head.Split " ").[1].Split ":").[0] |> uint64
     let tile = RawTile (id, lines)
     tile 
 
 let readRaw (file:String) : RawTile[] =
     let lines = readFile(file) |> Seq.toArray
+    printfn "Lines: %A" lines 
     let split = splitByBlank lines
+    printfn "Split: %A" split 
     let rawTiles = split |> Seq.map toRawTile |> Seq.toArray  
 //    printfn "%A" rawTiles
     rawTiles 

@@ -5,11 +5,14 @@ open System
 let reverseString (s:String) : String =
     s.ToCharArray() |> Array.rev |> String.Concat 
 
-type RawTile (id: int, lines: String[]) as self =
+type TileId = uint64 // just to not use it by mistake 
+
+type RawTile (id: TileId, lines: String[]) as self =
     override this.ToString() = String.concat "\n" lines |> (sprintf "Tile[%d]: \n%s\n" id)
+    member this.Id = id 
     member this.left () : int =
         lines
-        |> Seq.map (fun line -> line.[0])
+        |> Seq.map (fun line -> (line.ToCharArray ()).[0])
         |> Seq.map (fun c -> if c = '#' then 1 else 0) 
         |> Seq.fold (fun (acc:int) (i:int) -> (acc*2)+i) 0
         
@@ -45,12 +48,12 @@ type RawTile (id: int, lines: String[]) as self =
         |> Seq.fold (fun (acc:int) (i:int) -> (acc*2)+i) 0
 
     member this.bottom () : int =
-        lines.[0].ToCharArray ()
+        lines.[lines.Length-1].ToCharArray ()
         |> Seq.map (fun c -> if c = '#' then 1 else 0) 
         |> Seq.fold (fun (acc:int) (i:int) -> (acc*2)+i) 0
      
     member this.bottomRev () : int =
-        lines.[0].ToCharArray ()
+        lines.[lines.Length-1].ToCharArray ()
         |> Seq.rev 
         |> Seq.map (fun c -> if c = '#' then 1 else 0) 
         |> Seq.fold (fun (acc:int) (i:int) -> (acc*2)+i) 0
@@ -63,11 +66,16 @@ type RawTile (id: int, lines: String[]) as self =
         RawTile (id, lines |> Array.rev)
     
     member this.rotateLeft () : RawTile =
-        let s (n:int): String =
-            {9..0}
-            |> Seq.map (fun (i:int) -> lines.[i].[0])
-            |> String.Concat
-        let newLines = {0..9} |> Seq.map (s) |> Seq.toArray 
+        let l = lines.[0].Length-1 
+//        printfn "rotateLeft ()" 
+        let at(x:int) (y:int) : char =
+//            printfn "at(%d,%d) = %A" x y lines.[l-x].[y]
+            lines.[l-x].[y]
+        let s (y:int): String =
+            {0..l}
+            |> Seq.map (fun x -> at x y)
+            |> String.Concat 
+        let newLines = {0..l} |> Seq.map (s) |> Seq.toArray 
         RawTile (id,newLines)
         
     member this.rotateRight () : RawTile = this.rotateLeft().rotateLeft().rotateLeft()
@@ -85,7 +93,14 @@ type RawTile (id: int, lines: String[]) as self =
          frontSide.flipVertical()                  // rotation 3 (= rotate.rotate)
          backSide.rotateRight ()                   // rotation 4
         |]
-         
-        
+
+type FastTile (id:TileId,top:int,bottom:int,left:int,right:int) as self =
+    override this.ToString () = sprintf "FastTile(id:%d t:%d,b:%d,l:%d,r:%d)" id top bottom left right
+    new(raw:RawTile) = FastTile(raw.Id, raw.top (), raw.bottom (), raw.left (), raw.right ())
+    member this.Id = id
+    member this.Top = top
+    member this.Bottom = bottom
+    member this.Left = left
+    member this.Right = right 
         
         
