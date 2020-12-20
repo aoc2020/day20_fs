@@ -26,7 +26,6 @@ let rec splitByBlank(lines: String[]) : List<List<String>> =
             
 
 let toRawTile (s: List<String>) : RawTile =
-    printfn "toRawTile: %A" s 
     let lines = s.Tail |> Seq.toArray
     let id = ((s.Head.Split " ").[1].Split ":").[0] |> uint64
     let tile = RawTile (id, lines)
@@ -34,9 +33,6 @@ let toRawTile (s: List<String>) : RawTile =
 
 let readRaw (file:String) : RawTile[] =
     let lines = readFile(file) |> Seq.toArray
-    printfn "Lines: %A" lines 
     let split = splitByBlank lines
-    printfn "Split: %A" split 
     let rawTiles = split |> Seq.map toRawTile |> Seq.toArray  
-//    printfn "%A" rawTiles
     rawTiles 
